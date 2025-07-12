@@ -64,7 +64,22 @@
           do {
             newMap = allMaps[Math.floor(Math.random() * allMaps.length)];
           } while (recentMaps.includes(newMap));
-          setRecentMaps([...recentMaps.slice(-11), newMap]);
+          const recentMapsSize = parseInt(
+            document.getElementById("recentMapsSize").value,
+          );
+          switch (recentMapsSize) {
+            case 0:
+              setRecentMaps([]);
+              break;
+            case 1:
+              setRecentMaps([newMap]);
+              break;
+            default:
+              setRecentMaps([
+                ...recentMaps.slice(-1 * (recentMapsSize - 1)),
+                newMap,
+              ]);
+          }
           setOutput(newMap);
         };
         useEffect(() => {
@@ -90,8 +105,12 @@
               </h2>
             </button>
             <br />
-            <details>
+            <details class=${css`
+              text-align: center;
+            `}>
               <summary>Recent Maps</summary>
+              <label for="recentMapsSize">Number of recent maps to avoid</label>
+              <input id="recentMapsSize" type="number" min="0" max="29" value="12" />
               <ol>
                 ${recentMaps.toReversed().map((mapName) => html`<li>${mapName}</li>`)}
               </ol>
