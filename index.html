@@ -25,6 +25,8 @@
       } from "https://esm.sh/uland";
       import { css } from "https://esm.sh/styled-elements";
 
+      const localStoragePrefix = "mkwTrackRandomizer";
+
       const allMaps = [
         "Acorn Heights",
         "Airship Fortress",
@@ -58,9 +60,26 @@
         "Whistlestop Summit",
       ];
 
+      const useLocalStorageState = (localStorageKey, initialState) => {
+        const [state, setState] = useState(
+          JSON.parse(localStorage.getItem(localStorageKey)) ?? initialState,
+        );
+        return [
+          state,
+          (newState) => {
+            localStorage.setItem(localStorageKey, JSON.stringify(newState));
+            return setState(newState);
+          },
+          () => {
+            localStorage.removeItem(localStorageKey);
+            setState(initialState);
+          },
+        ];
+      };
       const Main = Component(() => {
         const [output, setOutput] = useState();
-        const [recentMaps, setRecentMaps] = useState([]);
+        const [recentMaps, setRecentMaps, clearRecentMaps] =
+          useLocalStorageState(`${localStoragePrefix}-recentMaps`, []);
         const roll = () => {
           let newMap;
           do {
@@ -112,7 +131,16 @@
             `}>
               <summary>Recent Maps</summary>
               <label for="recentMapsSize">Number of recent maps to avoid</label>
-              <input id="recentMapsSize" type="number" min="0" max="29" value="12" />
+              <input
+                id="recentMapsSize"
+                type="number"
+                min="0"
+                max="29"
+                value=${localStorage.getItem(`${localStoragePrefix}-recentMapsSize`) ?? 12}
+                onchange=${(event) => localStorage.setItem(`${localStoragePrefix}-recentMapsSize`, event.target.value)}
+              />
+              <br />
+              <button onclick=${clearRecentMaps}>Clear</button>
               <ol>
                 ${recentMaps.toReversed().map((mapName) => html`<li>${mapName}</li>`)}
               </ol>
